@@ -2,10 +2,35 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include QMK_KEYBOARD_H
+#include <ws2812.h>
 
 #define _MAIN 0
 #define _NAV 1
 #define _MOUSE 2
+
+void keyboard_post_init_user(void) {
+    gpio_set_pin_output(GP11);
+    gpio_write_pin_high(GP11);
+    rgblight_setrgb_at (0x00,  0x00, 0x50, 0);
+}
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+    switch (get_highest_layer(state)) {
+    case _MAIN:
+        rgblight_setrgb_at (0x00,  0x00, 0x50, 0);
+        break;
+    case _NAV:
+        rgblight_setrgb_at (0x50,  0x00, 0x00, 0);
+        break;
+    case _MOUSE:
+        rgblight_setrgb_at (0x00,  0x50, 0x00, 0);
+        break;
+    default: //  for any other layers
+        rgblight_setrgb_at (0x00,  0x50, 0x50, 0);
+        break;
+    }
+  return state;
+}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*
