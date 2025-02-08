@@ -10,7 +10,8 @@
         "console": false,
         "extrakey": true,
         "mousekey": true,
-        "nkro": true
+        "nkro": true,
+        "rgblight": true
     },
     "matrix_pins": {
         "cols": ["GP26", "GP27", "GP28", "GP29"],
@@ -22,6 +23,17 @@
         "device_version": "1.0.0",
         "pid": "0x1312",
         "vid": "0xFEED"
+    },
+    "rgblight": {
+        "driver": "ws2812",
+        "layers": {
+            "enabled": true
+        },
+        "led_count": 1
+    },
+    "ws2812": {
+        "driver": "vendor",
+        "pin": "GP12"
     },
     "layouts": {
         "LAYOUT_numpad_4x5": {
