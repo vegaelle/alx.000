@@ -1,0 +1,4 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"D1, D10, D11, D12, D13, D14, D15, D16, D17, D18, D2, D3, D4, D5, D6, D7, D8, D9",Diode_SOD-123,18,D,
+"SW1, SW10, SW11, SW12, SW13, SW14, SW15, SW16, SW17, SW18, SW2, SW3, SW4, SW5, SW6, SW7, SW8, SW9",CPG1316S01D02_mikeholscher,18,Switch,
+U1,Seeed_XIAO_RP2040,1,MCU_Seeed_XIAO_RP2040,
