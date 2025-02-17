@@ -1,0 +1,13 @@
+[project]
+name = "keycaps"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ipdb>=0.13.13",
+    "ipython>=8.32.0",
+    "lib3mf>=2.3.3",
+    "to-3mf>=0.1.0",
+    "typeguard>=4.4.1",
+]

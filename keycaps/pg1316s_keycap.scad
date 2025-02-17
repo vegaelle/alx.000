@@ -22,21 +22,27 @@ kc_homing_length = 4;
 kc_homing_width = .6;
 kc_homing_pos = .3;
 
+// base positioning
+
+kc_base_pos_x = 0;
+kc_base_pos_y = 0;
+kc_margin = 20;
+
 // labels
 
-kc_label_top_left = undef;
-kc_label_top_center = undef;
-kc_label_top_right = undef;
-kc_label_middle_left = undef;
-kc_label_middle_center = "5";
-kc_label_middle_right = undef;
-kc_label_bottom_left = undef;
-kc_label_bottom_center = "Ins";
-kc_label_bottom_right = undef;
+kc_label_top_left = "";
+kc_label_top_center = "";
+kc_label_top_right = "";
+kc_label_middle_left = "";
+kc_label_middle_center = "";
+kc_label_middle_right = "";
+kc_label_bottom_left = "";
+kc_label_bottom_center = "";
+kc_label_bottom_right = "";
 
 // labels settings
 
-kc_label_font = "Noto Sans";
+kc_label_font = "DejaVu Sans:style=Bold";
 kc_label_relative_size = .25;
 kc_label_positioning = .35;
 
@@ -136,106 +142,110 @@ module label(x, y, char) {
     }
 }
 
-if(kc_part != "labels") {
-    difference() {
+translate([kc_base_pos_x * kc_margin, kc_base_pos_y * kc_margin, 0]) {  // position offset for each key
+    rotate([180, 0, 0]) {  // face down
+        if(kc_part != "labels") {
+            difference() {
 
-        union() {
-        
-            color("gray") {
-
-                // Top layer
-                intersection() {
-                    translate([0, 0, kc_height]) {
-                        roundedcube(
-                            [kc_outer_size, kc_outer_size, kc_shell_width*2],
-                            center=true,
-                            radius=kc_radius
-                        );
-                    }
-                    
-                    translate([0, 0, kc_height + kc_shell_width/2]) {
-                        cube(
-                            [kc_outer_size, kc_outer_size, kc_shell_width],
-                            center=true
-                        );
-                    }
-                }
-
-                // homing
-                if(kc_homing) {
-                    translate([0, -(kc_outer_size*kc_homing_pos)/2, kc_height + kc_shell_width/2 + kc_homing_width/2]) {
-                        roundedcube(
-                            [kc_homing_length, kc_homing_width, kc_homing_width],
-                            center=true,
-                            radius=kc_homing_width/2
-                        );
-                    }
-                }
-
-                // Sides
-                translate([0, 0, kc_height / 2]) {
-                    difference() {
-                        roundedcube(
-                            [kc_outer_size, kc_outer_size, kc_height],
-                            center=true,
-                            radius=kc_radius,
-                            apply_to="z"
-                        );
-                        roundedcube(
-                            [kc_inner_size, kc_inner_size, kc_height],
-                            center=true,
-                            radius=kc_radius,
-                            apply_to="z"
-                        );
-                    }
-                }
+                union() {
                 
-                support();
-                mirror([1, 0, 0]) {
-                    support();
-                }
-                mirror([0, 1, 0]) {
-                    support();
-                }
-                mirror([0, 1, 0]) {
-                    mirror([1, 0, 0]) {
+                    color("gray") {
+
+                        // Top layer
+                        intersection() {
+                            translate([0, 0, kc_height]) {
+                                roundedcube(
+                                    [kc_outer_size, kc_outer_size, kc_shell_width*2],
+                                    center=true,
+                                    radius=kc_radius
+                                );
+                            }
+                            
+                            translate([0, 0, kc_height + kc_shell_width/2]) {
+                                cube(
+                                    [kc_outer_size, kc_outer_size, kc_shell_width],
+                                    center=true
+                                );
+                            }
+                        }
+
+                        // homing
+                        if(kc_homing) {
+                            translate([0, -(kc_outer_size*kc_homing_pos)/2, kc_height + kc_shell_width/2 + kc_homing_width/2]) {
+                                roundedcube(
+                                    [kc_homing_length, kc_homing_width, kc_homing_width],
+                                    center=true,
+                                    radius=kc_homing_width/2
+                                );
+                            }
+                        }
+
+                        // Sides
+                        translate([0, 0, kc_height / 2]) {
+                            difference() {
+                                roundedcube(
+                                    [kc_outer_size, kc_outer_size, kc_height],
+                                    center=true,
+                                    radius=kc_radius,
+                                    apply_to="z"
+                                );
+                                roundedcube(
+                                    [kc_inner_size, kc_inner_size, kc_height],
+                                    center=true,
+                                    radius=kc_radius,
+                                    apply_to="z"
+                                );
+                            }
+                        }
+                        
                         support();
+                        mirror([1, 0, 0]) {
+                            support();
+                        }
+                        mirror([0, 1, 0]) {
+                            support();
+                        }
+                        mirror([0, 1, 0]) {
+                            mirror([1, 0, 0]) {
+                                support();
+                            }
+                        }
+                    }
+                }
+
+                // Labels pockets
+                union() {
+                    let(pos=(kc_outer_size - kc_outer_size * kc_label_positioning)/2) {
+                        if(kc_label_top_left != undef) label(-pos, pos, kc_label_top_left);
+                        if(kc_label_top_center != undef) label(0, pos, kc_label_top_center);
+                        if(kc_label_top_right != undef) label(pos, pos, kc_label_top_right);
+                        if(kc_label_middle_left != undef) label(-pos, 0, kc_label_middle_left);
+                        if(kc_label_middle_center != undef) label(0, 0, kc_label_middle_center);
+                        if(kc_label_middle_right != undef) label(pos, 0, kc_label_middle_right);
+                        if(kc_label_bottom_left != undef)label(-pos, -pos, kc_label_bottom_left);
+                        if(kc_label_bottom_center != undef) label(0, -pos, kc_label_bottom_center);
+                        if(kc_label_bottom_right != undef) label(pos, -pos, kc_label_bottom_right);
                     }
                 }
             }
         }
 
-        // Labels pockets
-        union() {
-            let(pos=(kc_outer_size - kc_outer_size * kc_label_positioning)/2) {
-                if(kc_label_top_left != undef) label(-pos, pos, kc_label_top_left);
-                if(kc_label_top_center != undef) label(0, pos, kc_label_top_center);
-                if(kc_label_top_right != undef) label(pos, pos, kc_label_top_right);
-                if(kc_label_middle_left != undef) label(-pos, 0, kc_label_middle_left);
-                if(kc_label_middle_center != undef) label(0, 0, kc_label_middle_center);
-                if(kc_label_middle_right != undef) label(pos, 0, kc_label_middle_right);
-                if(kc_label_bottom_left != undef)label(-pos, -pos, kc_label_bottom_left);
-                if(kc_label_bottom_center != undef) label(0, -pos, kc_label_bottom_center);
-                if(kc_label_bottom_right != undef) label(pos, -pos, kc_label_bottom_right);
-            }
-        }
-    }
-}
-
-if(kc_part != "keycap") {
-    // Labels
-    color("black") {
-        union() {
-            let(pos=(kc_outer_size - kc_outer_size * kc_label_positioning)/2) {
-                if(kc_label_top_left != undef) label(-pos, pos, kc_label_top_left);
-                if(kc_label_top_center != undef) label(0, pos, kc_label_top_center);
-                if(kc_label_top_right != undef) label(pos, pos, kc_label_top_right);
-                if(kc_label_middle_left != undef) label(-pos, 0, kc_label_middle_left);
-                if(kc_label_middle_center != undef) label(0, 0, kc_label_middle_center);
-                if(kc_label_middle_right != undef) label(pos, 0, kc_label_middle_right);
-                if(kc_label_bottom_left != undef)label(-pos, -pos, kc_label_bottom_left);
-                if(kc_label_bottom_center != undef) label(0, -pos, kc_label_bottom_center);
-                if(kc_label_bottom_right != undef) label(pos, -pos, kc_label_bottom_right);
+        if(kc_part != "keycap") {
+            // Labels
+            color("black") {
+                union() {
+                    let(pos=(kc_outer_size - kc_outer_size * kc_label_positioning)/2) {
+                        if(kc_label_top_left != undef) label(-pos, pos, kc_label_top_left);
+                        if(kc_label_top_center != undef) label(0, pos, kc_label_top_center);
+                        if(kc_label_top_right != undef) label(pos, pos, kc_label_top_right);
+                        if(kc_label_middle_left != undef) label(-pos, 0, kc_label_middle_left);
+                        if(kc_label_middle_center != undef) label(0, 0, kc_label_middle_center);
+                        if(kc_label_middle_right != undef) label(pos, 0, kc_label_middle_right);
+                        if(kc_label_bottom_left != undef)label(-pos, -pos, kc_label_bottom_left);
+                        if(kc_label_bottom_center != undef) label(0, -pos, kc_label_bottom_center);
+                        if(kc_label_bottom_right != undef) label(pos, -pos, kc_label_bottom_right);
+                    }
+                }
             }
         }
     }
