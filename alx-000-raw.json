@@ -2,5 +2,5 @@
 [{y:0.5,t:"#000000\n#ff0000",a:4,f:3},"\nHome\n\n\n\n\n\n\n\n7","\n↑\n\n\n\n\n\n\n\n8","\nPgUp\n\n\n\n\n\n\n\n9",{x:0.5},"\n,\n\n\n\n\n\n\n\n/"],
 ["\n←\n\n\n\n\n\n\n\n4",{t:"#000000",a:7,n:true},"5",{t:"#000000\n#ff0000",a:4},"\n→\n\n\n\n\n\n\n\n6",{x:0.5},"\n=\n\n\n\n\n\n\n\n*"],
 ["\nEnd\n\n\n\n\n\n\n\n1","\n↓\n\n\n\n\n\n\n\n2","\nPgDn\n\n\n\n\n\n\n\n3",{x:0.5},"\n↺\n\n\n\n\n\n\n\n-"],
-["\nBack\n\n\n\n\n\n\n\nEnt","\nIns\n\n\n\n\n\n\n\n0","\nDel\n\n\n\n\n\n\n\n.",{x:0.5},"\n⎋\n\n\n\n\n\n\n\n+"]
+["\nBack\n\n\n\n\n\n\n\nEnt","\nIns\n\n\n\n\n\n\n\n0","\nDel\n\n\n\n\n\n\n\n.",{x:0.5},"\n♥\n\n\n\n\n\n\n\n+"]
 

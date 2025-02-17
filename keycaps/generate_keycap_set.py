@@ -10,8 +10,7 @@ import unicodedata
 import enum
 
 import typeguard
-import lib3mf
-
+from to_3mf.stl_to_3mf import stl_to_3mf
 
 logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO)
@@ -118,8 +117,11 @@ def render_model(render_type: RenderTarget, label: Optional[MultiLabel],
     """
     logger.info('Calling render %s for %s key at position (%.2f,%.2f)', render_type.name, label,
                 pos_x, pos_y)
-    args = [OPENSCAD_COMMAND, '--export-format', 'binstl', '-o', file_name, '-D',
-            f'kc_part="{render_type.value}"']
+    args = [OPENSCAD_COMMAND, '--export-format', 'binstl', '-o', file_name,
+            '-D', f'kc_part="{render_type.value}"',
+            '-D', f'kc_base_pos_x={pos_x}',
+            '-D', f'kc_base_pos_y={pos_y}',
+            ]
     if label is not None and len(label):
         for label_pos, label_text in label.items():
             args += ['-D', f'kc_label_{label_pos}="{label_text}"']
@@ -133,75 +135,72 @@ def render_model(render_type: RenderTarget, label: Optional[MultiLabel],
 
 
 
-def generate_key_into_model(model: lib3mf.Model,
+def generate_key_into_model(tmp_dir: str,
                             label: MultiLabel,
                             modifier: KeyboardModifier,
-                            pos_x: float, pos_y: float):
+                            pos_x: float, pos_y: float) -> list[str]:
     """
-    Generates a combined keycap model for a given key, and imports it into a model.
+    Generates a combined keycap model for a given key.
     """
     main_label = label.main_label()
-    reader = model.QueryReader('stl')
 
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        if isinstance(main_label, str):
-            if not main_label.isalpha():
-                main_label = unicodedata.name(main_label).replace(' ', '_')
-            main_label = main_label.lower()
+    if isinstance(main_label, str):
+        if not main_label.isalpha():
+            main_label = unicodedata.name(main_label).replace(' ', '_')
+        main_label = main_label.lower()
 
-            keycap_file = f"{KEY_MODEL}_keycap_{main_label}.stl"
-            label_file = f"{KEY_MODEL}_label_{main_label}.stl"
-            render_model(RenderTarget.keycap, label,
-                         os.path.join(tmp_dir, keycap_file), modifier, pos_x, pos_y)
-            reader.ReadFromFile(os.path.join(tmp_dir, keycap_file))
-            render_model(RenderTarget.labels, label,
-                         os.path.join(tmp_dir, label_file), modifier, pos_x, pos_y)
-            reader.ReadFromFile(os.path.join(tmp_dir, label_file))
-        else:  # key without any label
-            all_file = f"{KEY_MODEL}_all_{main_label}.stl"
-            render_model(RenderTarget.all, None,
-                         os.path.join(tmp_dir, all_file), modifier, pos_x, pos_y)
-            reader.ReadFromFile(os.path.join(tmp_dir, all_file))
+        keycap_file = f"{KEY_MODEL}_keycap_{main_label}.stl"
+        label_file = f"{KEY_MODEL}_label_{main_label}.stl"
+        render_model(RenderTarget.keycap, label,
+                     os.path.join(tmp_dir, keycap_file), modifier, pos_x, pos_y)
+        render_model(RenderTarget.labels, label,
+                     os.path.join(tmp_dir, label_file), modifier, pos_x, pos_y)
+        return [keycap_file, label_file]
+    else:  # key without any label
+        all_file = f"{KEY_MODEL}_all_{main_label}.stl"
+        render_model(RenderTarget.all, None,
+                     os.path.join(tmp_dir, all_file), modifier, pos_x, pos_y)
+        return [all_file]
     
 
 def main():
     parser = argparse.ArgumentParser(description='Generate a set of labeled keycaps '
                                      'from a keyboard layout definition')
     parser.add_argument('layout_file', type=keyboard_layout)
-    parser.add_argument('dest_file', type=argparse.FileType('w'))
+    parser.add_argument('dest_file', type=argparse.FileType('wb'))
     args = parser.parse_args()
-    args.dest_file.close()
 
-    wrapper = lib3mf.get_wrapper()
-    model = wrapper.CreateModel()
-    assert isinstance(model, lib3mf.Model)
-    cur_y = 0
-    cur_modifier: KeyboardModifier = {}
-    keys_count = 0
-    for line in args.layout_file[:1]:
-        cur_x = 0
-        for item in line:
-            try:
-                typeguard.check_type(item, KeyboardModifier)
-                cur_modifier = item
-                if 'y' in cur_modifier:
-                    cur_y += cur_modifier['y']
-                if 'x' in cur_modifier:
-                    cur_x += cur_modifier['x']
-            except typeguard.TypeCheckError:
-                generate_key_into_model(model,
-                                        MultiLabel.from_string(item),
-                                        cur_modifier,
-                                        cur_x, cur_y)
 
-                keys_count += 1
-            cur_x += 1
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        stl_files = []
+        cur_y = 0
+        cur_modifier: KeyboardModifier = {}
+        keys_count = 0
+        for line in args.layout_file:
+            cur_x = 0
+            for item in line:
+                try:
+                    typeguard.check_type(item, KeyboardModifier)
+                    cur_modifier = item
+                    if 'y' in cur_modifier:
+                        cur_y += cur_modifier['y']
+                    if 'x' in cur_modifier:
+                        cur_x += cur_modifier['x']
+                except typeguard.TypeCheckError:
+                    stl_files += generate_key_into_model(
+                        tmp_dir,
+                        MultiLabel.from_string(item),
+                        cur_modifier,
+                        cur_x, cur_y)
 
-        cur_y += 1
+                    keys_count += 1
+                    cur_x += 1
 
-    writer = model.QueryWriter('3mf')
-    writer.WriteToFile(args.dest_file.name)
-    logger.info('Written %d models into %s', keys_count, args.dest_file.name)
+            cur_y += 1
+
+        stl_files = [os.path.join(tmp_dir, f) for f in stl_files]
+        stl_to_3mf(stl_files, args.dest_file)
+        logger.info('Written %d models into %s', keys_count, args.dest_file.name)
 
 
 if __name__ == '__main__':

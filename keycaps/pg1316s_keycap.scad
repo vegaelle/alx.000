@@ -26,7 +26,7 @@ kc_homing_pos = .3;
 
 kc_base_pos_x = 0;
 kc_base_pos_y = 0;
-kc_margin = 20;
+kc_margin = 18;
 
 // labels
 
@@ -43,8 +43,9 @@ kc_label_bottom_right = "";
 // labels settings
 
 kc_label_font = "DejaVu Sans:style=Bold";
-kc_label_relative_size = .25;
-kc_label_positioning = .35;
+kc_center_label_relative_size = .35;
+kc_label_relative_size = .22;
+kc_label_positioning = .4;
 
 // Parts to save. Must be "keycap", "labels" or "all"
 kc_part = "keycap";
@@ -130,13 +131,14 @@ module support() {
 }
 
 module label(x, y, char) { 
+        
     translate([x, y, kc_height]) {
         linear_extrude(height=kc_shell_width) {
             text(char,
                  font=kc_label_font,
                  halign="center",
                  valign="center",
-                 size=kc_outer_size*kc_label_relative_size
+                 size=kc_outer_size* (((x==0)&&(y==0)) ? kc_center_label_relative_size : kc_label_relative_size)
             );
         }
     }
